@@ -18,14 +18,10 @@ High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU ac
 
 ## Installation
 
-### 1. Install the Plugin
+### 1. Clone the Plugin
 
 ```bash
-# Clone or copy the plugin to your plugins directory
-cp -r voice-to-claude ~/.claude/plugins/
-
-# Or use Claude Code's plugin install command
-/plugin install voice-to-claude
+git clone https://github.com/enesbasbug/voice-to-claude ~/.claude/plugins/voice-to-claude
 ```
 
 ### 2. Run Setup
