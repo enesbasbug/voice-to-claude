@@ -8,7 +8,6 @@ High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU ac
 - **Metal Acceleration**: GPU-accelerated transcription on Apple Silicon
 - **Multiple Models**: Choose from tiny (~0.5s) to large-v3 (best quality)
 - **Hotkey Activation**: Hold Ctrl+Alt to record, release to transcribe
-- **Auto-Start**: Daemon starts automatically when Claude Code launches
 
 ## Requirements
 
@@ -18,29 +17,36 @@ High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU ac
 
 ## Installation
 
-### 1. Clone the Plugin
+### 1. Clone to Claude Code skills directory
 
 ```bash
-git clone https://github.com/enesbasbug/voice-to-claude ~/.claude/plugins/voice-to-claude
+git clone https://github.com/enesbasbug/voice-to-claude ~/.claude/skills/voice-to-claude
 ```
 
-### 2. Run Setup
+### 2. Restart Claude Code
 
-In Claude Code, run:
-
-```
-/voice-to-claude:setup
+```bash
+claude
 ```
 
-This will guide you through:
-1. Installing Python dependencies
-2. Building whisper.cpp with Metal support
-3. Downloading a Whisper model (base recommended)
-4. Configuring the daemon
+### 3. Run setup
 
-### 3. Restart Claude Code
+In Claude Code, type `/voice-to-claude` and Claude will guide you through setup. Or run directly:
 
-After setup, restart Claude Code. The daemon will start automatically.
+```bash
+bash ~/.claude/skills/voice-to-claude/scripts/setup.sh
+```
+
+This will:
+1. Install Python dependencies (sounddevice, numpy, scipy, pynput)
+2. Clone and build whisper.cpp with Metal support
+3. Download the base model (~142MB)
+
+### 4. Start the daemon
+
+```bash
+bash ~/.claude/skills/voice-to-claude/scripts/start.sh
+```
 
 ## Usage
 
@@ -48,82 +54,53 @@ After setup, restart Claude Code. The daemon will start automatically.
 2. **Speak** - Say what you want to dictate
 3. **Release** - Text appears in Claude Code input
 
-## Slash Commands
+## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/voice-to-claude:setup` | One-time setup wizard |
-| `/voice-to-claude:status` | Check daemon status |
-| `/voice-to-claude:config` | Change model, hotkey, or settings |
+| Script | Description |
+|--------|-------------|
+| `scripts/setup.sh` | One-time setup (build whisper.cpp, download model) |
+| `scripts/start.sh` | Start the daemon |
+| `scripts/stop.sh` | Stop the daemon |
+| `scripts/status.sh` | Check daemon status |
+| `scripts/config.sh` | Change settings (model, hotkey, etc.) |
 
 ## Configuration
 
-Configuration is stored at `~/.config/voice-to-claude/config.json`
+Config is stored at `~/.config/voice-to-claude/config.json`
 
 ### Available Models
 
 | Model | Size | Speed | Use Case |
 |-------|------|-------|----------|
 | tiny | ~75MB | ~0.5s | Quick notes, simple phrases |
-| base | ~142MB | ~1s | General use (recommended) |
+| base | ~142MB | ~1s | General use (default) |
 | medium | ~1.5GB | ~2s | Better accuracy |
-| large-v3 | ~3GB | ~3s | Best quality, complex audio |
+| large-v3 | ~3GB | ~3s | Best quality |
+
+Change model:
+```bash
+bash ~/.claude/skills/voice-to-claude/scripts/config.sh model medium
+```
 
 ### Hotkey Options
 
 Default: Ctrl+Alt (hold both to record)
 
-You can change to any combination of:
-- Ctrl (Control)
-- Alt (Option)
-- Shift
-- Cmd (Command)
-
-### Output Modes
-
-- `keyboard` - Types text directly (default)
-- `clipboard` - Copies to clipboard and pastes
-
-## Architecture
-
-```
-voice-to-claude/
-├── .claude-plugin/
-│   └── plugin.json          # Plugin manifest
-├── commands/
-│   ├── setup.md             # Setup wizard
-│   ├── config.md            # Configuration
-│   └── status.md            # Status check
-├── hooks/
-│   └── hooks.json           # Auto-start daemon
-├── src/voice_to_claude/
-│   ├── daemon.py            # Background service
-│   ├── recorder.py          # Audio recording
-│   ├── transcriber.py       # whisper.cpp integration
-│   ├── keyboard.py          # Text injection
-│   ├── config.py            # Settings management
-│   └── sounds.py            # Audio feedback
-├── scripts/
-│   ├── setup.py             # Setup script
-│   └── exec.py              # Entry point
-├── pyproject.toml
-└── README.md
+Change hotkey:
+```bash
+bash ~/.claude/skills/voice-to-claude/scripts/config.sh hotkey ctrl+shift
 ```
 
 ## Troubleshooting
 
 ### Daemon not starting
 ```bash
-# Check status
-python3 ~/.config/voice-to-claude/check_status.py
-
-# View logs
 tail -50 ~/.config/voice-to-claude/daemon.log
 ```
 
 ### Microphone not working
 1. Go to System Settings > Privacy & Security > Microphone
-2. Enable Terminal (or the app running Claude Code)
+2. Enable Terminal (or your terminal app)
 3. Restart the daemon
 
 ### Model not found
@@ -131,16 +108,6 @@ tail -50 ~/.config/voice-to-claude/daemon.log
 cd ~/.local/share/voice-to-claude/whisper.cpp
 ./models/download-ggml-model.sh base
 ```
-
-## Comparison with claude-stt
-
-| Feature | voice-to-claude | claude-stt |
-|---------|-----------------|------------|
-| STT Engine | whisper.cpp (GGML) | Moonshine ONNX |
-| GPU | Metal acceleration | CPU only |
-| Models | Tiny/Base/Medium/Large-v3 | Fixed Moonshine |
-| Quality | Higher accuracy | Faster but less accurate |
-| Platform | macOS focused | Cross-platform |
 
 ## License
 
