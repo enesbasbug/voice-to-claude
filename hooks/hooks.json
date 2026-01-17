@@ -1,0 +1,8 @@
+{
+  "hooks": [
+    {
+      "event": "PostStart",
+      "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon start --background --quiet 2>/dev/null || true"
+    }
+  ]
+}

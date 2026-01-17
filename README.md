@@ -2,116 +2,175 @@
 
 High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU acceleration.
 
-## Features
+[![License](https://img.shields.io/github/license/enesbasbug/voice-to-claude)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/enesbasbug/voice-to-claude)](https://github.com/enesbasbug/voice-to-claude/stargazers)
 
-- **Local Processing**: 100% offline, no cloud APIs, no data leaves your device
-- **Metal Acceleration**: GPU-accelerated transcription on Apple Silicon
-- **Multiple Models**: Choose from tiny (~0.5s) to large-v3 (best quality)
-- **Hotkey Activation**: Hold Ctrl+Alt to record, release to transcribe
+## Install
 
-## Requirements
+Inside Claude Code, run the following commands:
 
-- macOS (Apple Silicon recommended for Metal acceleration)
-- Python 3.10+
-- Claude Code CLI
-
-## Installation
-
-### 1. Clone to Claude Code skills directory
-
-```bash
-git clone https://github.com/enesbasbug/voice-to-claude ~/.claude/skills/voice-to-claude
+**Step 1: Add the marketplace**
+```
+/plugin marketplace add enesbasbug/voice-to-claude
 ```
 
-### 2. Restart Claude Code
-
-```bash
-claude
+**Step 2: Install the plugin**
+```
+/plugin install voice-to-claude
 ```
 
-### 3. Run setup
-
-In Claude Code, type `/voice-to-claude` and Claude will guide you through setup. Or run directly:
-
-```bash
-bash ~/.claude/skills/voice-to-claude/scripts/setup.sh
+**Step 3: Run setup**
+```
+/voice-to-claude:setup
 ```
 
-This will:
-1. Install Python dependencies (sounddevice, numpy, scipy, pynput)
-2. Clone and build whisper.cpp with Metal support
-3. Download the base model (~142MB)
+Done! Hold **Ctrl+Alt** to record, release to transcribe.
 
-### 4. Start the daemon
+> **Note**: Setup builds whisper.cpp with Metal support (~3-5 min first time),
+> downloads the base model (~142MB), and configures the daemon.
 
-```bash
-bash ~/.claude/skills/voice-to-claude/scripts/start.sh
+---
+
+## What is Voice-to-Claude?
+
+Voice-to-Claude gives you high-quality voice input directly into Claude Code using whisper.cpp with Metal GPU acceleration.
+
+| What You Get | Why It Matters |
+|--------------|----------------|
+| **Local processing** | All audio processed on-device using whisper.cpp |
+| **Metal GPU acceleration** | Fast transcription on Apple Silicon |
+| **Multiple models** | Choose quality/speed tradeoff (tiny to large-v3) |
+| **Push-to-talk** | Hold hotkey to record, release to transcribe |
+| **Privacy first** | No audio or text sent to external services |
+
+### How It Works
+
+```
+Hold Ctrl+Alt → start recording
+        ↓
+Audio captured from microphone
+        ↓
+Release Ctrl+Alt → stop recording
+        ↓
+whisper.cpp transcribes locally (~1s for base model)
+        ↓
+Text inserted into Claude Code input
 ```
 
-## Usage
+**Key details:**
+- Uses whisper.cpp (GGML) for high-quality transcription
+- Metal acceleration for fast GPU inference on macOS
+- Keyboard injection or clipboard fallback
+- Native system sounds for audio feedback
 
-1. **Hold Ctrl+Alt** - Recording starts (you'll hear a sound)
-2. **Speak** - Say what you want to dictate
-3. **Release** - Text appears in Claude Code input
-
-## Commands
-
-| Script | Description |
-|--------|-------------|
-| `scripts/setup.sh` | One-time setup (build whisper.cpp, download model) |
-| `scripts/start.sh` | Start the daemon |
-| `scripts/stop.sh` | Stop the daemon |
-| `scripts/status.sh` | Check daemon status |
-| `scripts/config.sh` | Change settings (model, hotkey, etc.) |
+---
 
 ## Configuration
 
-Config is stored at `~/.config/voice-to-claude/config.json`
+Customize your settings anytime:
+
+```
+/voice-to-claude:config
+```
+
+### Options
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `model` | `tiny`, `base`, `medium`, `large-v3` | `base` | Whisper model |
+| `hotkey` | Key combo | `ctrl+alt` | Trigger recording |
+| `output_mode` | `keyboard`, `clipboard` | `keyboard` | How text is inserted |
+| `sound_effects` | `true`, `false` | `true` | Play audio feedback |
 
 ### Available Models
 
-| Model | Size | Speed | Use Case |
-|-------|------|-------|----------|
-| tiny | ~75MB | ~0.5s | Quick notes, simple phrases |
-| base | ~142MB | ~1s | General use (default) |
-| medium | ~1.5GB | ~2s | Better accuracy |
-| large-v3 | ~3GB | ~3s | Best quality |
+| Model | Size | Speed | Quality |
+|-------|------|-------|---------|
+| tiny | ~75MB | ~0.5s | Basic |
+| base | ~142MB | ~1s | Good (default) |
+| medium | ~1.5GB | ~2s | Better |
+| large-v3 | ~3GB | ~3s | Best |
 
-Change model:
+Settings stored in `~/.config/voice-to-claude/config.json`.
+
+---
+
+## Requirements
+
+- **macOS** (Apple Silicon recommended for Metal acceleration)
+- **Python 3.10+**
+- **cmake** and **Xcode Command Line Tools** (for building whisper.cpp)
+- **~200MB-3GB disk space** depending on model
+
+### Prerequisites
+
 ```bash
-bash ~/.claude/skills/voice-to-claude/scripts/config.sh model medium
+# Install build tools (if not already installed)
+brew install cmake
+xcode-select --install
 ```
 
-### Hotkey Options
+---
 
-Default: Ctrl+Alt (hold both to record)
+## Commands
 
-Change hotkey:
-```bash
-bash ~/.claude/skills/voice-to-claude/scripts/config.sh hotkey ctrl+shift
-```
+| Command | Description |
+|---------|-------------|
+| `/voice-to-claude:setup` | First-time setup: build whisper.cpp, download model |
+| `/voice-to-claude:start` | Start the voice dictation daemon |
+| `/voice-to-claude:stop` | Stop the daemon |
+| `/voice-to-claude:status` | Show daemon status and configuration |
+| `/voice-to-claude:config` | Change settings (model, hotkey, etc.) |
+
+---
 
 ## Troubleshooting
 
-### Daemon not starting
+| Issue | Solution |
+|-------|----------|
+| No audio input | Check microphone permissions in System Settings > Privacy & Security > Microphone |
+| Keyboard injection not working | Grant Accessibility permissions in System Settings > Privacy & Security > Accessibility |
+| Build failed | Ensure cmake and Xcode tools are installed: `brew install cmake && xcode-select --install` |
+| Model not loading | Run `/voice-to-claude:setup` to download. Check disk space |
+| Hotkey not triggering | Check for conflicts with other apps. Try `/voice-to-claude:config` to change hotkey |
+
+### Logs
+
 ```bash
 tail -50 ~/.config/voice-to-claude/daemon.log
 ```
 
-### Microphone not working
-1. Go to System Settings > Privacy & Security > Microphone
-2. Enable Terminal (or your terminal app)
-3. Restart the daemon
+---
 
-### Model not found
+## Privacy
+
+**All processing is local:**
+- Audio captured from your microphone is processed entirely on-device
+- whisper.cpp runs locally — no cloud API calls
+- Audio is never sent anywhere, never stored
+- Transcribed text only goes to Claude Code input or clipboard
+
+**No telemetry or analytics.**
+
+---
+
+## Development
+
 ```bash
-cd ~/.local/share/voice-to-claude/whisper.cpp
-./models/download-ggml-model.sh base
+git clone https://github.com/enesbasbug/voice-to-claude
+cd voice-to-claude
+
+# Test locally without marketplace install
+claude --plugin-dir /path/to/voice-to-claude
 ```
+
+---
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT — see [LICENSE](LICENSE)
+
+---
 
 ## Credits
 
