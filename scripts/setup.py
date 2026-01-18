@@ -74,11 +74,29 @@ def _ensure_venv(plugin_root: Path) -> Path | None:
     python_path = _venv_python(plugin_root)
     
     if python_path.exists():
-        return python_path
+        # Verify the venv Python is the same version as current Python
+        try:
+            venv_version = subprocess.check_output(
+                [str(python_path), "--version"], text=True, stderr=subprocess.STDOUT
+            ).strip()
+            current_version = f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+            if venv_version != current_version:
+                # Venv was created with wrong Python version, recreate it
+                _print_info(f"Recreating venv (found {venv_version}, need {current_version})...")
+                shutil.rmtree(venv_dir)
+            else:
+                return python_path
+        except Exception:
+            # If we can't check, try to recreate
+            if venv_dir.exists():
+                shutil.rmtree(venv_dir)
 
     _print_info("Creating virtual environment...")
     try:
-        venv.EnvBuilder(with_pip=True).create(venv_dir)
+        # Explicitly use the current Python executable to ensure correct version
+        venv.EnvBuilder(with_pip=True, system_site_packages=False).create(
+            venv_dir, symlinks=False
+        )
     except Exception as e:
         _print_error(f"Failed to create virtual environment: {e}")
         return None
