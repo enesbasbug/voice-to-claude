@@ -24,13 +24,14 @@ High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU ac
    /voice-to-claude:setup
    ```
 
-**That's it!** Hold **Ctrl+Alt** to record, release to transcribe.
+**That's it!** Hold **Ctrl+Alt** (or **Ctrl+Option** on macOS) to record, release to transcribe.
 
 > **Note**: 
 > - First-time setup takes ~3-5 minutes (builds whisper.cpp with Metal support)
 > - Downloads the base Whisper model (~142MB)
 > - Works with Python 3.10, 3.11, or 3.12 (auto-detected)
-> - Creates a local virtual environment (`.venv`) to isolate dependencies
+> - Creates a local virtual environment (`.venv`) in the plugin directory to isolate dependencies
+> - No system-wide Python package installation required
 > - Claude Code may ask for permission to run commands during setup (this is normal)
 
 ---
@@ -50,7 +51,7 @@ Voice-to-Claude gives you high-quality voice input directly into Claude Code usi
 ### How It Works
 
 ```
-Hold Ctrl+Alt → start recording
+Hold Ctrl+Alt (Ctrl+Option on macOS) → start recording
         ↓
 Audio captured from microphone
         ↓
@@ -82,7 +83,7 @@ Customize your settings anytime:
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
 | `model` | `tiny`, `base`, `medium`, `large-v3` | `base` | Whisper model |
-| `hotkey` | Key combo | `ctrl+alt` | Trigger recording |
+| `hotkey` | Key combo | `ctrl+alt` | Trigger recording (Ctrl+Option on macOS) |
 | `output_mode` | `keyboard`, `clipboard` | `keyboard` | How text is inserted |
 | `sound_effects` | `true`, `false` | `true` | Play audio feedback |
 
