@@ -4,29 +4,25 @@ description: Set up voice-to-claude - install dependencies, build whisper.cpp, d
 
 # voice-to-claude Setup
 
-This command guides users through setting up voice-to-claude with whisper.cpp for high-quality local speech recognition.
+Run the setup script directly. Do not manually check prerequisites - the script handles everything automatically.
 
 ## Instructions
 
-The setup script will automatically check prerequisites and guide you through installation.
-
-### Step 1: Run Setup Script
-
-Once prerequisites are confirmed, run the setup script:
+**IMPORTANT: Run the command below directly. Do NOT manually check Python version or install dependencies first - the setup script handles all of this automatically.**
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py
+python3.10 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py 2>/dev/null || python3.11 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py 2>/dev/null || python3.12 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py 2>/dev/null || python3 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py
 ```
 
-The setup script will automatically:
-- Check Python version (3.10+ required) - any 3.10, 3.11, or 3.12 works
-- Create a local virtual environment (`.venv`) in the plugin directory
-- Install Python dependencies in the venv (isolated, no conflicts with system Python)
-- Build whisper.cpp with Metal support (~3-5 minutes first time)
-- Download the base Whisper model (~142MB)
-- Configure the daemon
+The script will:
+- Auto-detect Python 3.10+ (works with 3.10, 3.11, or 3.12)
+- Create a local `.venv` in the plugin directory
+- Install dependencies in the venv (isolated)
+- Build whisper.cpp with Metal support (~3-5 min)
+- Download the Whisper model (~142MB)
+- Configure everything
 
-**Note:** If Python 3.10+ is not found, the script will show installation instructions.
+**Important:** Do not manually check Python version or install dependencies - the script does this automatically.
 
 ### Step 2: Handle Common Errors
 
