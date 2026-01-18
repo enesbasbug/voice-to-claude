@@ -1,263 +1,181 @@
 #!/usr/bin/env python3
 """
-Setup script for voice-to-claude.
-Installs dependencies, builds whisper.cpp, downloads model.
+Bootstrap setup for voice-to-claude (stdlib only).
+Creates venv and installs dependencies, then runs main setup.
 """
 
+from __future__ import annotations
+
+import argparse
 import os
-import sys
-import json
-import subprocess
+import platform
 import shutil
+import subprocess
+import sys
+import venv
 from pathlib import Path
-
-# Paths
-HOME = Path.home()
-INSTALL_DIR = HOME / ".local" / "share" / "voice-to-claude"
-CONFIG_DIR = HOME / ".config" / "voice-to-claude"
-CONFIG_FILE = CONFIG_DIR / "config.json"
-WHISPER_DIR = INSTALL_DIR / "whisper.cpp"
-
-# Get plugin root (parent of scripts directory)
-SCRIPT_DIR = Path(__file__).parent.resolve()
-PLUGIN_ROOT = SCRIPT_DIR.parent
+from typing import Sequence
 
 
-def print_header(text):
-    print(f"\n{'=' * 50}")
-    print(text)
-    print('=' * 50)
+def _get_plugin_root() -> Path:
+    env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if env_root:
+        return Path(env_root).expanduser()
+    return Path(__file__).resolve().parents[1]
 
 
-def print_step(num, total, text):
-    print(f"\n[{num}/{total}] {text}")
+def _print_error(message: str) -> None:
+    print(f"Error: {message}", file=sys.stderr)
 
 
-def run_command(cmd, cwd=None, capture=False):
-    """Run a shell command."""
+def _print_info(message: str) -> None:
+    print(message)
+
+
+def _check_python() -> bool:
+    """Check if Python version is 3.10+."""
+    if sys.version_info < (3, 10):
+        current = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        _print_error(f"Python 3.10+ required, but found {current}.")
+        _print_info("")
+        system = platform.system()
+        if system == "Darwin":
+            _print_info("Install with: brew install python@3.11")
+            _print_info("Or download from: https://www.python.org/downloads/")
+        elif system == "Linux":
+            _print_info("Install with: sudo apt install python3.11 python3-venv python3-pip")
+        else:
+            _print_info("Download from: https://www.python.org/downloads/")
+        return False
+    return True
+
+
+def _check_uv() -> str | None:
+    """Check if uv is available."""
+    return shutil.which("uv")
+
+
+def _run(cmd: list[str], cwd: Path) -> int:
+    """Run a command."""
+    return subprocess.call(cmd, cwd=str(cwd))
+
+
+def _venv_python(plugin_root: Path) -> Path:
+    """Get path to venv Python."""
+    venv_dir = plugin_root / ".venv"
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
+
+
+def _ensure_venv(plugin_root: Path) -> Path | None:
+    """Create venv if it doesn't exist."""
+    venv_dir = plugin_root / ".venv"
+    python_path = _venv_python(plugin_root)
+    
+    if python_path.exists():
+        return python_path
+
+    _print_info("Creating virtual environment...")
     try:
-        if capture:
-            result = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True)
-            return result.returncode == 0, result.stdout, result.stderr
-        else:
-            result = subprocess.run(cmd, shell=True, cwd=cwd)
-            return result.returncode == 0, "", ""
+        venv.EnvBuilder(with_pip=True).create(venv_dir)
     except Exception as e:
-        return False, "", str(e)
+        _print_error(f"Failed to create virtual environment: {e}")
+        return None
+
+    return python_path if python_path.exists() else None
 
 
-def check_python_deps():
-    """Check if Python dependencies are installed."""
-    deps = ["sounddevice", "numpy", "scipy", "pynput"]
-    missing = []
-    for dep in deps:
-        try:
-            __import__(dep)
-        except ImportError:
-            missing.append(dep)
-    return missing
-
-
-def install_python_deps():
-    """Install Python dependencies."""
-    print("  Installing Python dependencies...")
-    success, _, err = run_command("pip3 install sounddevice numpy scipy pynput")
-    if not success:
-        print(f"  Warning: pip install had issues: {err}")
-        # Try with --user flag
-        run_command("pip3 install --user sounddevice numpy scipy pynput")
-    return True
-
-
-def check_whisper_built():
-    """Check if whisper.cpp is built."""
-    whisper_cli = WHISPER_DIR / "build" / "bin" / "whisper-cli"
-    return whisper_cli.exists()
-
-
-def build_whisper():
-    """Clone and build whisper.cpp with Metal support."""
-    print("  Creating install directory...")
-    INSTALL_DIR.mkdir(parents=True, exist_ok=True)
-
-    if not WHISPER_DIR.exists():
-        print("  Cloning whisper.cpp...")
-        success, _, err = run_command(
-            "git clone https://github.com/ggerganov/whisper.cpp.git",
-            cwd=INSTALL_DIR
-        )
-        if not success:
-            print(f"  Error cloning whisper.cpp: {err}")
-            return False
-
-    print("  Building with Metal support (this may take a few minutes)...")
-    success, _, err = run_command(
-        "cmake -B build -DGGML_METAL=ON",
-        cwd=WHISPER_DIR
+def _pip_install(python_path: Path, plugin_root: Path) -> int:
+    """Install package in venv."""
+    return _run(
+        [
+            str(python_path),
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "--no-input",
+            ".",
+        ],
+        plugin_root,
     )
-    if not success:
-        print(f"  Error running cmake: {err}")
-        return False
 
-    success, _, err = run_command(
-        "cmake --build build -j",
-        cwd=WHISPER_DIR
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="voice-to-claude setup bootstrap")
+    parser.add_argument(
+        "--skip-install",
+        action="store_true",
+        help="Skip dependency installation.",
     )
-    if not success:
-        print(f"  Error building: {err}")
-        return False
-
-    if check_whisper_built():
-        print("  ✓ whisper.cpp built successfully")
-        return True
-    else:
-        print("  ✗ Build failed - whisper-cli not found")
-        return False
-
-
-def check_model_exists(model="base"):
-    """Check if a model is downloaded."""
-    model_file = WHISPER_DIR / "models" / f"ggml-{model}.bin"
-    return model_file.exists()
-
-
-def download_model(model="base"):
-    """Download a Whisper model."""
-    print(f"  Downloading {model} model...")
-    success, _, err = run_command(
-        f"./models/download-ggml-model.sh {model}",
-        cwd=WHISPER_DIR
+    parser.add_argument(
+        "--skip-build",
+        action="store_true",
+        help="Skip whisper.cpp build.",
     )
-    if success and check_model_exists(model):
-        print(f"  ✓ {model} model downloaded")
-        return True
-    else:
-        print(f"  ✗ Failed to download model: {err}")
-        return False
+    parser.add_argument(
+        "--skip-model",
+        action="store_true",
+        help="Skip model download.",
+    )
+    args, passthrough = parser.parse_known_args(argv)
 
+    if not _check_python():
+        return 1
 
-def copy_source_files():
-    """Copy Python source files to install directory."""
-    src_dir = PLUGIN_ROOT / "src"
-    dest_dir = INSTALL_DIR / "src"
+    plugin_root = _get_plugin_root()
+    os.environ.setdefault("CLAUDE_PLUGIN_ROOT", str(plugin_root))
 
-    if src_dir.exists():
-        print("  Copying Python modules...")
-        if dest_dir.exists():
-            shutil.rmtree(dest_dir)
-        shutil.copytree(src_dir, dest_dir)
-        return True
-    return False
+    # Check for uv first (faster)
+    uv = _check_uv()
+    if uv:
+        _print_info("Using uv for dependency management.")
+        if not args.skip_install:
+            sync_cmd = [uv, "sync", "--directory", str(plugin_root)]
+            exit_code = _run(sync_cmd, plugin_root)
+            if exit_code != 0:
+                _print_error("uv sync failed.")
+                return exit_code
 
+        # Run setup using uv
+        cmd = [
+            uv,
+            "run",
+            "--directory",
+            str(plugin_root),
+            "python",
+            "-m",
+            "voice_to_claude.setup",
+            *passthrough,
+        ]
+        if args.skip_build:
+            cmd.append("--skip-build")
+        if args.skip_model:
+            cmd.append("--skip-model")
+        return _run(cmd, plugin_root)
 
-def save_config():
-    """Save configuration file."""
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    # Fallback to venv
+    venv_python = _ensure_venv(plugin_root)
+    if venv_python is None:
+        return 1
 
-    config = {
-        "whisper_cpp_path": str(WHISPER_DIR / "build" / "bin" / "whisper-cli"),
-        "models_dir": str(WHISPER_DIR / "models"),
-        "model": "base",
-        "hotkey_ctrl": True,
-        "hotkey_alt": True,
-        "hotkey_shift": False,
-        "hotkey_cmd": False,
-        "output_mode": "keyboard",
-        "sound_effects": True,
-        "max_recording_seconds": 60,
-        "setup_complete": True
-    }
+    if not args.skip_install:
+        _print_info("Installing dependencies in local .venv...")
+        exit_code = _pip_install(venv_python, plugin_root)
+        if exit_code != 0:
+            _print_error("pip install failed.")
+            return exit_code
 
-    with open(CONFIG_FILE, "w") as f:
-        json.dump(config, f, indent=2)
-
-    print("  ✓ Configuration saved")
-    return True
-
-
-def run_setup(skip_build=False, skip_model=False):
-    """Run the full setup process."""
-    print_header("voice-to-claude Setup")
-
-    total_steps = 4
-    if skip_build:
-        total_steps -= 1
-    if skip_model:
-        total_steps -= 1
-
-    current_step = 0
-
-    # Step 1: Python dependencies
-    current_step += 1
-    print_step(current_step, total_steps, "Checking Python dependencies...")
-
-    missing = check_python_deps()
-    if missing:
-        print(f"  Missing: {', '.join(missing)}")
-        install_python_deps()
-        # Re-check
-        missing = check_python_deps()
-        if missing:
-            print(f"  ✗ Failed to install: {', '.join(missing)}")
-            print("  Try: pip3 install sounddevice numpy scipy pynput")
-            sys.exit(1)
-    print("  ✓ Python dependencies OK")
-
-    # Step 2: Build whisper.cpp
-    if not skip_build:
-        current_step += 1
-        print_step(current_step, total_steps, "Setting up whisper.cpp...")
-
-        if check_whisper_built():
-            print("  ✓ whisper.cpp already built")
-        else:
-            if not build_whisper():
-                print("\n  ✗ Failed to build whisper.cpp")
-                print("  Make sure you have cmake and Xcode tools installed:")
-                print("    brew install cmake")
-                print("    xcode-select --install")
-                sys.exit(1)
-
-    # Step 3: Download model
-    if not skip_model:
-        current_step += 1
-        print_step(current_step, total_steps, "Downloading Whisper model...")
-
-        if check_model_exists("base"):
-            print("  ✓ Base model already downloaded")
-        else:
-            if not download_model("base"):
-                print("\n  ✗ Failed to download model")
-                print("  Try manually:")
-                print(f"    cd {WHISPER_DIR}")
-                print("    ./models/download-ggml-model.sh base")
-                sys.exit(1)
-
-    # Step 4: Save configuration
-    current_step += 1
-    print_step(current_step, total_steps, "Saving configuration...")
-
-    copy_source_files()
-    save_config()
-
-    # Done!
-    print_header("Setup Complete!")
-    print("""
-To start voice dictation:
-  /voice-to-claude:start
-
-Or manually:
-  python3 {}/scripts/exec.py daemon start
-
-Then hold Ctrl+Alt and speak!
-""".format(PLUGIN_ROOT))
+    # Run main setup
+    cmd = [str(venv_python), "-m", "voice_to_claude.setup"]
+    if args.skip_build:
+        cmd.append("--skip-build")
+    if args.skip_model:
+        cmd.append("--skip-model")
+    cmd.extend(passthrough)
+    return _run(cmd, plugin_root)
 
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="voice-to-claude setup")
-    parser.add_argument("--skip-build", action="store_true", help="Skip whisper.cpp build")
-    parser.add_argument("--skip-model", action="store_true", help="Skip model download")
-    args = parser.parse_args()
-
-    run_setup(skip_build=args.skip_build, skip_model=args.skip_model)
+    raise SystemExit(main())

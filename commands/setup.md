@@ -8,61 +8,9 @@ This command guides users through setting up voice-to-claude with whisper.cpp fo
 
 ## Instructions
 
-Follow these steps IN ORDER. Do not skip ahead.
+The setup script will automatically check prerequisites and guide you through installation.
 
-### Step 1: Check Python Installation
-
-Run this command to check Python version:
-
-```bash
-python3 --version 2>/dev/null || python --version 2>/dev/null || echo "NOT_FOUND"
-```
-
-**Evaluate the result:**
-
-- If output is `NOT_FOUND` or command fails: Python is not installed. Go to Step 2.
-- If version is 3.9.x or lower: Python is too old. Go to Step 2.
-- If version is 3.10 or higher: Python is ready. Skip to Step 3.
-
-### Step 2: Install/Upgrade Python (if needed)
-
-If Python is missing or below 3.10:
-
-**macOS:**
-```bash
-brew install python@3.12
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update && sudo apt install -y python3.12 python3.12-venv python3-pip
-```
-
-After installation, verify:
-```bash
-python3 --version
-```
-
-### Step 3: Check Build Tools (macOS)
-
-whisper.cpp requires cmake and a C++ compiler:
-
-```bash
-command -v cmake >/dev/null && echo "cmake OK" || echo "cmake MISSING"
-command -v clang++ >/dev/null && echo "clang++ OK" || echo "clang++ MISSING"
-```
-
-If cmake is missing:
-```bash
-brew install cmake
-```
-
-If clang++ is missing, install Xcode Command Line Tools:
-```bash
-xcode-select --install
-```
-
-### Step 4: Run Setup Script
+### Step 1: Run Setup Script
 
 Once prerequisites are confirmed, run the setup script:
 
@@ -71,14 +19,16 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/setup.py
 ```
 
 The setup script will automatically:
-1. Install Python dependencies (sounddevice, numpy, scipy, pynput)
-2. Clone and build whisper.cpp with Metal GPU acceleration
-3. Download the base Whisper model (~142MB)
-4. Configure the daemon
+- Check Python version (3.10+ required) - any 3.10, 3.11, or 3.12 works
+- Create a local virtual environment (`.venv`) in the plugin directory
+- Install Python dependencies in the venv (isolated, no conflicts with system Python)
+- Build whisper.cpp with Metal support (~3-5 minutes first time)
+- Download the base Whisper model (~142MB)
+- Configure the daemon
 
-**This may take 3-5 minutes** on first run (building whisper.cpp takes time).
+**Note:** If Python 3.10+ is not found, the script will show installation instructions.
 
-### Step 5: Handle Common Errors
+### Step 2: Handle Common Errors
 
 **"Microphone permission denied" (macOS):**
 ```

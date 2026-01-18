@@ -13,19 +13,19 @@ When the user runs `/voice-to-claude:stop`:
 ### Step 1: Check daemon status
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
 ```
 
 ### Step 2: Stop if running
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon stop
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon stop
 ```
 
 ### Step 3: Confirm stopped
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
 ```
 
 Show confirmation:

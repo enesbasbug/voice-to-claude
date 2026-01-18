@@ -13,7 +13,7 @@ When the user runs `/voice-to-claude:config`:
 ### Step 1: Show current configuration
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config show
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config show
 ```
 
 Display current settings:
@@ -47,7 +47,7 @@ Available models:
 
 To change model, first check if it's downloaded:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config model <model_name>
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config model <model_name>
 ```
 
 If model isn't downloaded, download it:
@@ -57,7 +57,7 @@ cd ~/.local/share/voice-to-claude/whisper.cpp && ./models/download-ggml-model.sh
 
 Then set it:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config model <model_name>
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config model <model_name>
 ```
 
 ### Changing Hotkey
@@ -70,7 +70,7 @@ Examples:
 - `cmd+shift`
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config hotkey <keys>
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config hotkey <keys>
 ```
 
 ### Changing Output Mode
@@ -79,13 +79,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config hotkey <keys>
 - `clipboard` - Copies to clipboard and pastes
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config output <mode>
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config output <mode>
 ```
 
 ### Changing Sound Effects
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config sounds <on|off>
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config sounds <on|off>
 ```
 
 ### Step 3: Restart daemon
@@ -93,7 +93,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py config sounds <on|off>
 After changing settings, restart the daemon:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon restart
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon restart
 ```
 
 Confirm:

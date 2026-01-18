@@ -13,7 +13,7 @@ When the user runs `/voice-to-claude:start`:
 ### Step 1: Check if setup is complete
 
 ```bash
-test -f ~/.config/voice-to-claude/config.json && python3 -c "import json; c=json.load(open('$HOME/.config/voice-to-claude/config.json')); exit(0 if c.get('setup_complete') else 1)" && echo "SETUP_OK" || echo "SETUP_NEEDED"
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); test -f ~/.config/voice-to-claude/config.json && $PYTHON_CMD -c "import json; c=json.load(open('$HOME/.config/voice-to-claude/config.json')); exit(0 if c.get('setup_complete') else 1)" 2>/dev/null && echo "SETUP_OK" || echo "SETUP_NEEDED"
 ```
 
 - If output is `SETUP_NEEDED`: Tell user to run `/voice-to-claude:setup` first.
@@ -22,7 +22,7 @@ test -f ~/.config/voice-to-claude/config.json && python3 -c "import json; c=json
 ### Step 2: Check daemon status
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
 ```
 
 ### Step 3: Start if not running
@@ -30,13 +30,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
 If daemon is not running:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon start --background
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon start --background
 ```
 
 ### Step 4: Confirm and show usage
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status
 ```
 
 Show usage reminder:

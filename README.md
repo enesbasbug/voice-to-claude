@@ -7,27 +7,31 @@ High-quality voice dictation for Claude Code using whisper.cpp with Metal GPU ac
 
 ## Install
 
-Inside Claude Code, run the following commands:
+**Quick Start (3 steps):**
 
-**Step 1: Add the marketplace**
-```
-/plugin marketplace add enesbasbug/voice-to-claude
-```
+1. **Add marketplace** (one-time setup):
+   ```
+   /plugin marketplace add enesbasbug/voice-to-claude
+   ```
 
-**Step 2: Install the plugin**
-```
-/plugin install voice-to-claude
-```
+2. **Install plugin**:
+   ```
+   /plugin install voice-to-claude@voice-to-claude-marketplace
+   ```
 
-**Step 3: Run setup**
-```
-/voice-to-claude:setup
-```
+3. **Run setup** (downloads dependencies, builds whisper.cpp):
+   ```
+   /voice-to-claude:setup
+   ```
 
-Done! Hold **Ctrl+Alt** to record, release to transcribe.
+**That's it!** Hold **Ctrl+Alt** to record, release to transcribe.
 
-> **Note**: Setup builds whisper.cpp with Metal support (~3-5 min first time),
-> downloads the base model (~142MB), and configures the daemon.
+> **Note**: 
+> - First-time setup takes ~3-5 minutes (builds whisper.cpp with Metal support)
+> - Downloads the base Whisper model (~142MB)
+> - Works with Python 3.10, 3.11, or 3.12 (auto-detected)
+> - Creates a local virtual environment (`.venv`) to isolate dependencies
+> - Claude Code may ask for permission to run commands during setup (this is normal)
 
 ---
 

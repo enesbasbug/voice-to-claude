@@ -21,7 +21,7 @@ If `NOT_SETUP`: Tell user to run `/voice-to-claude:setup` first.
 ### Step 2: Get full status
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status --verbose
+PYTHON_CMD=$([ -f "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" ] && echo "${CLAUDE_PLUGIN_ROOT}/.venv/bin/python" || (command -v python3.11 >/dev/null && echo python3.11) || (command -v python3.10 >/dev/null && echo python3.10) || echo python3); $PYTHON_CMD ${CLAUDE_PLUGIN_ROOT}/scripts/exec.py daemon status --verbose
 ```
 
 ### Step 3: Display status
