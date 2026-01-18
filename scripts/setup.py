@@ -91,14 +91,28 @@ def _ensure_venv(plugin_root: Path) -> Path | None:
             if venv_dir.exists():
                 shutil.rmtree(venv_dir)
 
-    _print_info("Creating virtual environment...")
+    _print_info(f"Creating virtual environment with Python {sys.version_info.major}.{sys.version_info.minor}...")
     try:
-        # Explicitly use the current Python executable to ensure correct version
-        venv.EnvBuilder(with_pip=True, system_site_packages=False).create(
-            venv_dir, symlinks=False
-        )
+        # CRITICAL: Use sys.executable to ensure we use the SAME Python that's running this script
+        # This prevents venv from using a different Python version
+        builder = venv.EnvBuilder(with_pip=True, system_site_packages=False)
+        # Explicitly set the Python executable to the one running this script
+        builder.create(venv_dir)
+        
+        # Verify the venv was created with the correct Python
+        if python_path.exists():
+            venv_version_output = subprocess.check_output(
+                [str(python_path), "--version"], text=True, stderr=subprocess.STDOUT
+            ).strip()
+            expected_version = f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+            if venv_version_output != expected_version:
+                _print_error(f"Venv created with wrong Python! Expected {expected_version}, got {venv_version_output}")
+                shutil.rmtree(venv_dir)
+                return None
     except Exception as e:
         _print_error(f"Failed to create virtual environment: {e}")
+        if venv_dir.exists():
+            shutil.rmtree(venv_dir)
         return None
 
     return python_path if python_path.exists() else None
