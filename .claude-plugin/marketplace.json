@@ -1,6 +1,15 @@
 {
-  "name": "voice-to-claude",
-  "version": "0.1.0",
-  "description": "High-quality voice dictation using whisper.cpp with Metal GPU acceleration. Hold Ctrl+Alt, speak, release to transcribe.",
-  "repository": "https://github.com/enesbasbug/voice-to-claude"
+  "name": "voice-to-claude-marketplace",
+  "owner": {
+    "name": "Enes Basbug",
+    "url": "https://github.com/enesbasbug"
+  },
+  "plugins": [
+    {
+      "name": "voice-to-claude",
+      "source": ".",
+      "description": "High-quality voice dictation using whisper.cpp with Metal GPU acceleration. Hold Ctrl+Alt, speak, release to transcribe.",
+      "version": "0.1.0"
+    }
+  ]
 }
