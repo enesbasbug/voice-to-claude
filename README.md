@@ -159,15 +159,30 @@ tail -50 ~/.config/voice-to-claude/daemon.log
 
 ---
 
-## Development
+## Development (for contributors)
+
+If you're contributing to this repo, clone it and load the plugin locally:
 
 ```bash
 git clone https://github.com/enesbasbug/voice-to-claude
 cd voice-to-claude
 
 # Test locally without marketplace install
-claude --plugin-dir /path/to/voice-to-claude
+claude --plugin-dir .
 ```
+
+In Claude Code:
+
+```
+/voice-to-claude:setup
+/voice-to-claude:start
+```
+
+Notes:
+- The setup script creates a local `.venv` and installs dependencies there.
+- If `python3` points to 3.9, you can run:
+  `python3.11 ./scripts/setup.py`
+- On macOS, you may need to grant Microphone and Accessibility permissions.
 
 ---
 
