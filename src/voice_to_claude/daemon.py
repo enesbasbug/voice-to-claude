@@ -294,7 +294,13 @@ def start_daemon(background: bool = False, quiet: bool = False) -> None:
                     return
 
             # If we get here, daemon didn't write PID file
-            print(f"Warning: Daemon may have failed to start. Check {DEFAULT_LOG_FILE}")
+            # Check if the subprocess exited early
+            exit_code = process.poll()
+            if exit_code is not None:
+                print(f"Error: Daemon process exited with code {exit_code}. Check {DEFAULT_LOG_FILE}")
+                sys.exit(1)
+            else:
+                print(f"Warning: Daemon may have failed to start. Check {DEFAULT_LOG_FILE}")
 
         except (subprocess.SubprocessError, OSError) as e:
             print(f"Failed to start daemon: {e}")
