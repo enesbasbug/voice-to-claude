@@ -33,7 +33,8 @@ def main():
     # Config commands
     config_parser = subparsers.add_parser("config", help="Configuration management")
     config_parser.add_argument("setting", nargs="?",
-                               choices=["show", "model", "hotkey", "output", "sounds"],
+                               choices=["show", "model", "hotkey", "output", "sounds",
+                                        "language", "task"],
                                default="show", help="Setting to configure")
     config_parser.add_argument("value", nargs="?", help="New value")
 
@@ -123,6 +124,8 @@ def handle_config(args):
         print(f"Hotkey:   {config.get_hotkey_description()}")
         print(f"Output:   {config.output_mode}")
         print(f"Sounds:   {'enabled' if config.sound_effects else 'disabled'}")
+        print(f"Language: {config.language or 'auto-detect'}")
+        print(f"Task:     {config.task}")
         return
 
     if args.value is None:
@@ -138,6 +141,14 @@ def handle_config(args):
             print("\nOptions: keyboard, clipboard")
         elif args.setting == "sounds":
             print(f"Sound effects: {'on' if config.sound_effects else 'off'}")
+        elif args.setting == "language":
+            print(f"Current language: {config.language or 'auto-detect'}")
+            print("\nOptions: ISO 639-1 code (e.g. es, fr, de) or 'auto'")
+        elif args.setting == "task":
+            print(f"Current task: {config.task}")
+            print("\nOptions: transcribe, translate")
+            print("  transcribe = keep source language")
+            print("  translate  = convert to English (useful for non-English dictation)")
         return
 
     # Set new value
@@ -185,6 +196,36 @@ def handle_config(args):
         config.sound_effects = args.value.lower() in ["on", "true", "1", "yes"]
         config.save()
         print(f"Sound effects: {'on' if config.sound_effects else 'off'}")
+
+    elif args.setting == "language":
+        value = args.value.lower()
+        if value in ("auto", "none", ""):
+            config.language = None
+            config.save()
+            print("Language set to: auto-detect")
+        else:
+            # ISO 639-1 codes are 2 letters
+            if len(value) != 2 or not value.isalpha():
+                print(f"Invalid language code: {args.value}")
+                print("Use ISO 639-1 (e.g. es, fr, de) or 'auto'")
+                sys.exit(1)
+            config.language = value
+            config.save()
+            print(f"Language set to: {value}")
+        print("Restart daemon for changes to take effect.")
+
+    elif args.setting == "task":
+        value = args.value.lower()
+        if value not in ("transcribe", "translate"):
+            print(f"Invalid task: {args.value}")
+            print("Options: transcribe, translate")
+            sys.exit(1)
+        config.task = value
+        config.save()
+        print(f"Task set to: {value}")
+        if value == "translate":
+            print("Audio in any language will be translated to English.")
+        print("Restart daemon for changes to take effect.")
 
 
 def handle_setup(args):

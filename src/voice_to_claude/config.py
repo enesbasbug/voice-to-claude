@@ -56,6 +56,15 @@ class Config:
     # Model settings
     model: str = "base"
 
+    # Language settings
+    # ISO 639-1 code (e.g. "es", "fr", "de"). None = Whisper auto-detect.
+    # Setting this explicitly is faster and more accurate for non-English speakers.
+    language: Optional[str] = None
+    # "transcribe" keeps the source language; "translate" converts to English.
+    # Useful for dictating in Spanish/French/etc and feeding English prompts to coding assistants,
+    # which is more token-efficient and tends to produce better results.
+    task: str = "transcribe"
+
     # Output settings
     output_mode: str = "keyboard"  # "keyboard" or "clipboard"
 
