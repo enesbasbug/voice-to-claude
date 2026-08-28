@@ -59,15 +59,21 @@ class Transcriber:
 
         start_time = time.time()
 
+        cmd = [
+            str(whisper_cli),
+            "-m", str(model_path),
+            "-f", str(audio_path),
+            "--no-timestamps",
+            "-nt",
+        ]
+        if self.config.language:
+            cmd += ["-l", self.config.language]
+        if self.config.task == "translate":
+            cmd += ["-tr"]
+
         try:
             result = subprocess.run(
-                [
-                    str(whisper_cli),
-                    "-m", str(model_path),
-                    "-f", str(audio_path),
-                    "--no-timestamps",
-                    "-nt",
-                ],
+                cmd,
                 capture_output=True,
                 text=True,
                 timeout=timeout
